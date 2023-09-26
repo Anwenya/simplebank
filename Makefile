@@ -22,4 +22,8 @@ test:
 server:
 	go run main.go
 
+# 测试通过环境变量改变端口后会覆盖配置文件
+server-port:
+	SERVER_ADDRESS=0.0.0.0:7778 go run main.go
+
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc 
