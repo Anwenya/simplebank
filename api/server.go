@@ -3,6 +3,8 @@ package api
 import (
 	db "com.wlq/simplebank/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // http请求服务
@@ -18,11 +20,18 @@ func NewServer(store db.Store) *Server {
 	}
 	router := gin.Default()
 
+	// 绑定自定义参数校验标签
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
 	// 路由
 	router.POST("/accounts", server.createAccount)
 	// url参数
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.listAccount)
+
+	router.POST("/transfers", server.createTransfer)
 
 	server.router = router
 
