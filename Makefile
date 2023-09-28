@@ -26,4 +26,7 @@ server:
 server-port:
 	SERVER_ADDRESS=0.0.0.0:7778 go run main.go
 
+mock:
+	mockgen -package mockdb -destination db/mock/store.go com.wlq/simplebank/db/sqlc Store
+
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc 
