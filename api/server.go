@@ -26,6 +26,8 @@ func NewServer(store db.Store) *Server {
 	}
 
 	// 路由
+	router.POST("/users", server.createUser)
+
 	router.POST("/accounts", server.createAccount)
 	// url参数
 	router.GET("/accounts/:id", server.getAccount)
