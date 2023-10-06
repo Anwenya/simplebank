@@ -13,6 +13,7 @@ import (
 
 	mockdb "com.wlq/simplebank/db/mock"
 	db "com.wlq/simplebank/db/sqlc"
+	"com.wlq/simplebank/token"
 	"com.wlq/simplebank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -56,6 +57,7 @@ func TestCreateUserAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
@@ -192,7 +194,6 @@ func TestCreateUserAPI(t *testing.T) {
 			url := "/users"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
-
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(recorder)
 		})
