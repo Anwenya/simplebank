@@ -1,6 +1,11 @@
 package api
 
 import (
+	"fmt"
+
+	"com.wlq/simplebank/token"
+	"com.wlq/simplebank/util"
+
 	db "com.wlq/simplebank/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -9,16 +14,24 @@ import (
 
 // http请求服务
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	config     util.Config
+	store      db.Store
+	tokenMaker token.Maker
+	router     *gin.Engine
 }
 
 // 创建服务配置路由
-func NewServer(store db.Store) *Server {
-	server := &Server{
-		store: store,
+func NewServer(config util.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker:%w", err)
 	}
-	router := gin.Default()
+
+	server := &Server{
+		config:     config,
+		store:      store,
+		tokenMaker: tokenMaker,
+	}
 
 	// 绑定自定义参数校验标签
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -26,7 +39,16 @@ func NewServer(store db.Store) *Server {
 	}
 
 	// 路由
+	server.setupRouter()
+
+	return server, nil
+}
+
+func (server *Server) setupRouter() {
+	router := gin.Default()
+	// 路由
 	router.POST("/users", server.createUser)
+	router.POST("/users/login", server.loginUser)
 
 	router.POST("/accounts", server.createAccount)
 	// url参数
@@ -36,8 +58,6 @@ func NewServer(store db.Store) *Server {
 	router.POST("/transfers", server.createTransfer)
 
 	server.router = router
-
-	return server
 }
 
 // 启动
