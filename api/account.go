@@ -2,9 +2,11 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	db "com.wlq/simplebank/db/sqlc"
+	"com.wlq/simplebank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
@@ -24,8 +26,17 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	// 检查认证载荷中的用户名 登录的用户只能创建自己的账户
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if authPayload.Username != req.Owner {
+		err := errors.New("account's owner doesn't belong to the authorization user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -73,6 +84,14 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		return
 	}
 
+	// 检查认证载荷中的用户名 登录的用户只能查询自己的账户
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		err := errors.New("account doesn't belong to the authorization user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -90,10 +109,15 @@ func (server *Server) listAccount(ctx *gin.Context) {
 		return
 	}
 
+	// 检查认证载荷中的用户名 登录的用户只能查询自己的账户
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
+
 	accounts, err := server.store.ListAccounts(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
