@@ -50,6 +50,7 @@ func (server *Server) setupRouter() {
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/token/refresh", server.refreshAccessToken)
 
 	// 添加认证中间件的路由组
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
