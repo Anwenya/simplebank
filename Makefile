@@ -44,4 +44,25 @@ server-port:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go com.wlq/simplebank/db/sqlc Store
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc mock server-port db_docs db_schema
+proto:
+	rm -f pb/*.go
+	protoc \
+	--proto_path=proto \
+	--go_out=pb \
+	--go_opt=paths=source_relative \
+	--go-grpc_out=pb \
+	--go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=pb \
+	--grpc-gateway_opt=paths=source_relative \
+    proto/*.proto
+# --proto_path:导入路径, .proto配置文件内的 import 操作从该参数指定的路径下导入
+# --go_out:生成的golang代码的位置
+# --go-grpc_out:生成的golang grpc代码的位置
+# --grpc-gateway_out:生成的gateway代码的位置
+# 最后跟 .proto文件所在位置
+# --go_opt 和 --go-grpc_opt 是生成的相关配置,没有深入研究
+
+evans:
+	evans --host localhost --port 7778 -r repl
+
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc mock server-port db_docs db_schema proto evans
