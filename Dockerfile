@@ -3,6 +3,7 @@ FROM golang:1.21-alpine3.18 AS builder
 WORKDIR /app
 COPY . .
 # 由于网络原因不使用这种方式 直接在下面从主机拷贝migrate
+# 该方式已不再使用，已改为在服务启动入口执行数据库迁移
 # RUN apk add curl
 # RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
 ENV GOPROXY=https://goproxy.io
@@ -13,8 +14,9 @@ FROM alpine:3.18
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY app.env .
-COPY migrate .
-COPY db/migration ./migration
+# 该方式已不再使用，已改为在服务启动入口执行数据库迁移
+# COPY migrate .
+COPY db/migration ./db/migration
 COPY start.sh .
 COPY wait-for.sh .
 
