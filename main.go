@@ -82,7 +82,7 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Info().Msg("db migration successfully")
 }
 
-// 启动异步处理者
+// 启动处理器
 func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
 	log.Info().Msg("start task processor")
