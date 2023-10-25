@@ -5,6 +5,7 @@ package pb;
 import "rpc_create_user.proto";
 import "rpc_update_user.proto";
 import "rpc_login_user.proto";
+import "rpc_verify_email.proto";
 import "google/api/annotations.proto";
 
 option go_package = "com.wlq/simplebank/pb";
@@ -56,5 +57,15 @@ service SimpleBank{
           description: "通过该接口登录";
           summary: "登录";
         };
+    }
+    rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse){
+      option (google.api.http) = {
+          get: "/v1/verify_email"
+      };
+
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "验证邮件";
+        summary: "验证邮件";
+      };
     }
 }
