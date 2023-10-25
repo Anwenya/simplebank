@@ -11,6 +11,7 @@ import (
 	db "com.wlq/simplebank/db/sqlc"
 	_ "com.wlq/simplebank/doc/statik"
 	"com.wlq/simplebank/gapi"
+	"com.wlq/simplebank/mail"
 	"com.wlq/simplebank/pb"
 	"com.wlq/simplebank/util"
 	"com.wlq/simplebank/worker"
@@ -58,7 +59,7 @@ func main() {
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
 	// 启动任务处理器
-	runTaskProcessor(redisOpt, store)
+	runTaskProcessor(config, redisOpt, store)
 
 	// 启动http服务
 	// runGinServer(config, store)
@@ -83,8 +84,14 @@ func runDBMigration(migrationURL string, dbSource string) {
 }
 
 // 启动处理器
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewTencentSender(
+		config.EmailTencentSenderName,
+		config.EmailTencentSenderAddress,
+		config.EmailTencentSenderPassword,
+	)
+
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()
 	if err != nil {
