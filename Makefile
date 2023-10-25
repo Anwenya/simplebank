@@ -22,6 +22,11 @@ migrateup1:
 migratedown1:
 	migrate -path db/migration -database "$(DB_URL)" -verbose down 1
 
+# 创建新的迁移
+# 使用 $(name) 获取命令行的参数
+new_migration:
+	migrate create -ext sql -dir db/migration -seq $(name)
+
 db_docs:
 	dbdocs build doc/db.dbml
 
@@ -79,4 +84,4 @@ evans:
 redis:
 	docker run --name redis -p 6379:6379 -d redis:7-alpine
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc mock server-port db_docs db_schema proto evans redis
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc mock server-port db_docs db_schema proto evans redis new_migration
