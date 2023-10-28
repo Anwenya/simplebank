@@ -1,11 +1,12 @@
 package api
 
 import (
-	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	db "com.wlq/simplebank/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,7 +37,7 @@ func (server *Server) refreshAccessToken(ctx *gin.Context) {
 	// 验证是否存在对应的session
 	session, err := server.store.GetSession(ctx, refreshPayload.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
