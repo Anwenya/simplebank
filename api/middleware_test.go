@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"com.wlq/simplebank/token"
+	"com.wlq/simplebank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +21,7 @@ func addAuthorization(
 	username string,
 	duration time.Duration,
 ) {
-	token, _, err := tokenMaker.CreateToken(username, duration)
+	token, _, err := tokenMaker.CreateToken(username, util.DepositorRole, duration)
 	require.NoError(t, err)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, token)

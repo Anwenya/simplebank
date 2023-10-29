@@ -73,6 +73,7 @@ func (server *Server) refreshAccessToken(ctx *gin.Context) {
 	// 验证成功后创建token
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		refreshPayload.Username,
+		refreshPayload.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
